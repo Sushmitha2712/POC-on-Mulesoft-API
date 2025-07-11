@@ -2,8 +2,6 @@
 
 This is a Proof of Concept (POC) that moves **Person records** from a **MySQL database** to **Salesforce**, using **MuleSoft** as the integration layer. The integration fetches people records based on roles, updates the data back to the source system, and ensures fault tolerance and error logging.
 
----
-
 ##  Architecture Overview
 
 - **2 System APIs** are created:
