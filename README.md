@@ -1,19 +1,17 @@
-# 🔁 POC: MySQL to Salesforce Integration using MuleSoft
+#  POC: MySQL to Salesforce Integration using MuleSoft
 
 This is a Proof of Concept (POC) that moves **Person records** from a **MySQL database** to **Salesforce**, using **MuleSoft** as the integration layer. The integration fetches people records based on roles, updates the data back to the source system, and ensures fault tolerance and error logging.
 
 ---
 
-## ⚙️ Architecture Overview
+##  Architecture Overview
 
 - **2 System APIs** are created:
   - One for fetching data from the database
   - One for updating data in Salesforce
 - **1 Process API** handles the batch processing logic
 
----
-
-## 🔄 Flow Description
+##  Flow Description
 
 1. **Fetch Data Automatically**
    - Data is fetched from MySQL every **30 minutes** using a **Scheduler**.
@@ -61,7 +59,7 @@ This is a Proof of Concept (POC) that moves **Person records** from a **MySQL da
 
 ---
 
-## 📧 Notifications & Logging
+##  Notifications & Logging
 
 - **Email notifications** for failed validations
 - Separate logs for:
@@ -69,9 +67,8 @@ This is a Proof of Concept (POC) that moves **Person records** from a **MySQL da
   - Failure
 - Real-time visibility of flow status via logs
 
----
 
-## 🔐 Technologies Used
+## Technologies Used
 
 - MuleSoft (Anypoint Studio)
 - MySQL
