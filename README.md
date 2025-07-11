@@ -57,8 +57,6 @@ This is a Proof of Concept (POC) that moves **Person records** from a **MySQL da
      - Updates Salesforce
      - Reflects changes in the source system
 
----
-
 ##  Notifications & Logging
 
 - **Email notifications** for failed validations
