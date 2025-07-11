@@ -5,9 +5,10 @@ This is a Proof of Concept (POC) that moves **Person records** from a **MySQL da
 ##  Architecture Overview
 
 - **2 System APIs** are created:
-  - One for fetching data from the database
-  - One for updating data in Salesforce
-- **1 Process API** handles the batch processing logic
+  a.One for fetching data from the database (here it is personSystem)
+  b.One for updating data in Salesforce( here it is salesforceSystem)
+- **1 Process API** handles the batch processing logic (here it is personProcess)
+- created 3 raml codes(in anypointplatform and publish to exchange) and imported in anypointstudio.
 
 ##  Flow Description
 
