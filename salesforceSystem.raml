@@ -1,0 +1,68 @@
+#%RAML 1.0
+title: salesforceSystem 
+version: v1
+baseUri: /api/salesforce
+securitySchemes:
+   securityScheme: !include /ScuritySchema/securityScheme.raml
+
+uses:
+securedBy: securityScheme
+traits:
+     
+     CommonResponses:  !include /Trait/commonResponses.raml
+     
+/sf/employee:
+  post:
+    is: [CommonResponses]
+   
+    description: Add/Update Salesforce Employee record
+    body:
+      application/json:
+        example: |
+          {
+            "FirstName": "Manish",
+            "LastName": "Desai",
+            "Email": "manish@example.com"
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            example: {"message": "Employee synced successfully"}
+
+/sf/user:
+  post:
+    is: [CommonResponses]
+    
+    description: Add/Update Salesforce User record
+    body:
+      application/json:
+        example: |
+          {
+            "FirstName": "Anu",
+            "LastName": "Kumar",
+            "Email": "anu@example.com"
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            example: {"message": "User synced successfully"}
+
+/sf/seller:
+  post:
+    is: [CommonResponses]
+   
+    description: Add/Update Salesforce Seller record
+    body:
+      application/json:
+        example: |
+          {
+            "Name": "BestSeller Corp",
+            "SellerType": "Online"
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            example: {"message": "Seller synced successfully"}
