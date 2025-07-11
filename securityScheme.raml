@@ -1,0 +1,14 @@
+#%RAML 1.0 SecurityScheme
+type: x-client-id
+description: Enforces client_id and client_secret
+describedBy:
+  headers:
+    client_id:
+      type: string
+      required: true
+    client_secret:
+      type: string
+      required: true
+  responses:
+    401:
+      description: Unauthorized
