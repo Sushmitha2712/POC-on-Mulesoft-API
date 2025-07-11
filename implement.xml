@@ -1,0 +1,269 @@
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:scheduler="http://www.mulesoft.org/schema/mule/scheduler" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/scheduler http://www.mulesoft.org/schema/mule/scheduler/current/mule-scheduler.xsd http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+<!--  ================= Global Configuration =================  -->
+<db:config name="Database_Config" doc:name="DB Config">
+<!--  configure your JDBC URL, driver, user/pass  -->
+<db:my-sql-connection host="localhost" port="3306" user="root" password="Sush@123" database="sush"/>
+</db:config>
+<!--  ================ 1) Poll & Batch Job ================  -->
+<vm:config name="VM_Config" doc:name="VM Config" doc:id="16c51415-3c9e-42e9-825a-5207431bbafe">
+<vm:queues>
+<vm:queue queueName="employee"/>
+<vm:queue queueName="user"/>
+<vm:queue queueName="seller"/>
+</vm:queues>
+</vm:config>
+<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="3e1bf0b4-e5be-4588-ae6a-2c597ed8eeea">
+<salesforce:basic-connection username="sushmithavm2712@gmail.com" password="Sush@123" securityToken="KUrWZmso3gDqDTY1f8qRngJD" url="https://login.salesforce.com/services/Soap/u/61.0"/>
+</salesforce:sfdc-config>
+<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="d57e58d9-ddf9-4ea3-96fd-789b894382b8">
+<email:smtp-connection host="smtp.gmail.com" user="sushmithavm2712@gmail.com" password="oqjjcxmjxecmhwdq">
+<email:properties>
+<email:property key="mail.smtp.starttls.enable" value="true"/>
+</email:properties>
+</email:smtp-connection>
+</email:smtp-config>
+<os:object-store name="Object_store" doc:name="Object store" doc:id="8ad032d8-e60a-48cd-8879-f6f6f9c104d7"/>
+<http:request-config name="HTTP_Request_configurationDatabase" doc:name="HTTP Request configuration" doc:id="067ab4f8-9a0c-40f6-9891-7ab98701dd2f">
+<http:request-connection host="localhost" port="8081"/>
+</http:request-config>
+<flow name="PollNewPersonsFlow" doc:id="ac79ef84-e722-4f78-b252-d7be355c3f48">
+<scheduler doc:name="Scheduler" doc:id="0b19bb17-3c3b-44e0-bf97-1316d33aeb6b">
+<scheduling-strategy>
+<fixed-frequency frequency="30" timeUnit="MINUTES"/>
+</scheduling-strategy>
+</scheduler>
+<!--  <db:select config-ref="Database_Config" doc:name="Fetch New Persons">
+      <db:sql><![CDATA[SELECT * FROM persons WHERE Flag = 'new']]></db:sql>
+    </db:select>   -->
+<until-successful maxRetries="5" doc:name="Until Successful" doc:id="369af022-1ac0-4fdb-95dc-550c7f5539a5">
+<http:request method="GET" doc:name="Request" doc:id="e977a29b-fa5c-433e-a09a-864fa6ec33f1" url="http://localhost:8081/api/db/persons"/>
+</until-successful>
+<ee:transform doc:name="Transform Message" doc:id="b0e37cc6-d5ea-47c5-ad68-89b195998c19">
+<ee:message>
+<ee:set-payload>
+<![CDATA[ %dw 2.0 output application/java --- payload default [] ]]>
+</ee:set-payload>
+</ee:message>
+</ee:transform>
+<logger level="INFO" doc:name="Logger" doc:id="a4fedff2-b176-404c-9afe-d17ede41bfef" message=" Records fetched from DB: #[write(payload, 'application/json')]"/>
+<try doc:name="Try" doc:id="9797f312-e1b9-48fd-879a-f61f7a96b874">
+<foreach>
+<set-variable value="#[payload]" doc:name="Set Variable" doc:id="217ebc43-f49a-4fce-b441-bc7417be4980" variableName="originalRecord"/>
+<validation:is-true doc:name="Validate Phone Length" doc:id="f61e26d6-e682-493f-975c-4b8749bdd84f" expression="#[(payload.Phone default '') matches /^[0-9]{10}$/]" message="Phone must be 10 digits"/>
+<validation:is-not-blank-string doc:name="Validate Full Name" doc:id="cb3e041b-77d6-44de-af54-75f25d002414" value="#[payload.FullName]" message="Full name is required"/>
+</foreach>
+</try>
+<batch:job jobName="ProcessPersonsBatch">
+<batch:process-records>
+<batch:step name="BasedonRoles" doc:name="Validate and Map">
+<!--  Use DataWeave: splitBy to split name, if/else for phone length, map fields  -->
+<choice doc:name="Choice" doc:id="9fb7cf02-b72d-48a7-8100-b564f9bf5b1c">
+<when expression="#[payload.Role == 'Employee']">
+<set-variable value="#[payload]" doc:name="Set Variable" doc:id="fbeaa87d-a154-4fde-b14b-bccc4af281a1" variableName="originalRecord"/>
+<vm:publish config-ref="VM_Config" doc:name="Publish to VM" queueName="employee"/>
+</when>
+<when expression="#[payload.Role == 'User']">
+<set-variable value="#[payload]" doc:name="Set Variable" doc:id="039eeab7-4a95-40c0-9f58-d27da97ae2ca" variableName="originalRecord"/>
+<vm:publish doc:name="Publish" doc:id="c24e3081-c34f-42bf-982f-6c6bdae2dff2" config-ref="VM_Config" queueName="user"/>
+</when>
+<when expression="#[payload.Role == 'Seller']">
+<set-variable value="#[payload]" doc:name="Set Variable" doc:id="9dbc5fc9-bb8c-47bd-a116-c72cd2cbcdc0" variableName="originalRecord"/>
+<vm:publish doc:name="Publish" doc:id="51e3abcb-52bc-4407-a8c7-eea25905f911" config-ref="VM_Config" queueName="seller"/>
+</when>
+</choice>
+</batch:step>
+</batch:process-records>
+<batch:on-complete>
+<flow-ref name="BatchCompletionFlow"/>
+</batch:on-complete>
+</batch:job>
+<error-handler>
+<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="61840f55-d6fc-41e0-8cc9-c9eb66b2cc89">
+<db:update doc:name="Update" doc:id="d81d0802-778b-4586-8711-0d57e8c8e6fc" config-ref="Database_Config">
+<db:sql>
+<![CDATA[ UPDATE persons SET Flag = 'error' WHERE IdentificationNumber = :id ]]>
+</db:sql>
+<db:input-parameters>
+<![CDATA[ #[{ id: vars.originalRecord.IdentificationNumber}] ]]>
+</db:input-parameters>
+</db:update>
+<logger level="ERROR" message="Flag set to error for #[vars.originalRecord.IdentificationNumber]"/>
+<email:send config-ref="Email_SMTP" subject="POC: Errors in Person Process" doc:name="Send Failure Report" fromAddress="sushmithavm2712@gmail.com">
+<email:to-addresses>
+<email:to-address value="allyourperfectscoho@gmail.com"/>
+</email:to-addresses>
+<email:body contentType="application/json">
+<email:content>
+<![CDATA[ Batch had #[payload.recordsFailed default 0] failed records. Details: #[write(payload.failures default [], "application/json")] ]]>
+</email:content>
+</email:body>
+</email:send>
+<logger level="INFO" doc:name="Logger" doc:id="6d550c66-bc89-4813-8c86-adccfba91a7b" message="Error processing #[vars.originalRecord.IdentificationNumber default 'UNKNOWN']: #[error.description default 'No description']""/>
+</on-error-continue>
+</error-handler>
+</flow>
+<!--  -->
+<!--  ================ 3) Batch Completion – Aggregator & Notifications ================  -->
+<flow name="implementFlow" doc:id="cff95a0d-ae5a-4760-9f19-48ad5cc82283">
+<vm:listener doc:name="Listener" doc:id="e34d3980-c71c-4101-9c44-e12d4e258c91" config-ref="VM_Config" queueName="employee"/>
+<set-variable value="#[payload]" doc:name="Set Variable" doc:id="04504eb0-963d-4308-9b98-3f12302eb22f" variableName="originalRecord"/>
+<ee:transform doc:name="Transform Message" doc:id="85ab629d-ef6f-4f8c-be46-4a515b54f66d">
+<ee:message>
+<ee:set-payload>
+<![CDATA[ %dw 2.0 output application/json var fullNameParts = splitBy(payload.FullName, " ") var phone = trim(payload.Phone) --- { FirstName : fullNameParts[0], LastName : if(sizeOf(fullNameParts) > 1) fullNameParts[1] else "Default", Email : payload.EmailId default "noemail@company.com", DateOfBirth : (payload.DateOfBirth as Date {format: "yyyy-MM-dd"}) as String {format: "MM/dd/yyyy"}, Gender : payload.Gender default "Not Specified", HomeAddress : payload.Address default "NA", HomePhone : phone, EmployeeNumber : payload.IdentificationNumber, EmployeeType : payload.RoleType default "General", AboutMe : payload.Description default "No description provided", AvailabilityStartDate: (payload.StartDate as Date {format: "yyyy-MM-dd"}) as String {format: "MM/dd/yyyy"}, AvailabilityEndDate : (payload.EndDate as Date {format: "yyyy-MM-dd"}) as String {format: "MM/dd/yyyy"} } ]]>
+</ee:set-payload>
+</ee:message>
+</ee:transform>
+<logger level="INFO" doc:name="Logger" doc:id="b4bc1d51-9d0c-4091-bb58-0267f606c0ce" message=""Sending Employee to Salesforce: #[payload]""/>
+<!--  <salesforce:create doc:name="Create" doc:id="4c9d20ee-d1a6-48b2-b0c5-99b481fa690a" config-ref="Salesforce_Config" type="Employee__c"/>  -->
+<!-- 	<db:update doc:name="Update" doc:id="50d49fed-17db-4240-aa0f-f83d8e79e21a" config-ref="Database_Config">
+              <db:sql><![CDATA[ UPDATE persons
+SET Flag = 'moved',
+    ModifiedDate = CURRENT_TIMESTAMP
+WHERE IdentificationNumber = :id
+                
+              ]]></db:sql>
+              <db:input-parameters><![CDATA[
+                #[{ id: vars.originalRecord.IdentificationNumber }]
+              ]]></db:input-parameters>
+            </db:update>  -->
+<!-- 	<ee:transform doc:name="Transform Message" doc:id="ddb57280-a1a1-4a68-b511-0723ccd46e09">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+&#45;&#45;
+	{
+        Flag: "moved",
+        ModifiedDate: now() as String {format: "yyyy-MM-dd'T'HH:mm:ss"}
+      }]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>   -->
+<until-successful maxRetries="5" doc:name="Until Successful" doc:id="770ab621-d391-4893-a0a6-f1425410c00c">
+<http:request method="POST" doc:name="Request" doc:id="f64c7397-6149-4f51-b1bf-60af2bc8a846" url="http://localhost:8082/api/salesforce/sf/employee">
+<http:headers>
+<![CDATA[ #[output application/java --- { "Accept" : "application/json", "Content-Type" : "application/json" }] ]]>
+</http:headers>
+</http:request>
+</until-successful>
+<logger level="INFO" doc:name="Logger" doc:id="7d0ee338-95d7-4c8a-8798-65e92e66d9de" message="Employee synced succesfully"/>
+<set-variable value="#[vars.originalRecord.IdentificationNumber]" doc:name="Set Variable" doc:id="4415b7e1-6ead-48e5-bcf8-d799928c3187" variableName="personID"/>
+<ee:transform doc:name="Transform Message" doc:id="1966e37c-04a7-45be-8ab3-97b6d0d463fd">
+<ee:message>
+<ee:set-payload>
+<![CDATA[ %dw 2.0 output application/json --- { IdentificationNumber: vars.originalRecord.IdentificationNumber, Flag: "moved", ModifiedDate: now() as String {format: "yyyy-MM-dd'T'HH:mm:ss"} } ]]>
+</ee:set-payload>
+</ee:message>
+</ee:transform>
+<http:request method="PATCH" doc:name="Request" doc:id="f0677318-a2d4-4e3e-9a32-4f4f70cd6135" url="#['http://localhost:8081/api/db/persons/' ++ vars.personID]" config-ref="HTTP_Request_configurationDatabase">
+<http:headers>
+<![CDATA[ #[output application/java --- { "Content-Type" : "application/json" }] ]]>
+</http:headers>
+</http:request>
+<logger level="INFO" doc:name="Logger" doc:id="27c90808-bdf8-440a-9787-32402c45f7e7" message="Flag got updated to 'moved' for Employee"/>
+</flow>
+<flow name="implementFlow1" doc:id="33b72130-e6a7-453a-8065-06e94d975f5a">
+<vm:listener queueName="user" doc:name="Listener" doc:id="655fe226-770a-4470-a160-be428d6657a5" config-ref="VM_Config"/>
+<set-variable value="#[payload]" doc:name="Set Variable" doc:id="41e2585a-bc4a-44d2-9432-80089ec56c97" variableName="originalRecord"/>
+<ee:transform doc:name="Transform Message" doc:id="dcb751ba-ccba-49c2-96fd-ddd19679c91c">
+<ee:message>
+<ee:set-payload>
+<![CDATA[ %dw 2.0 output application/json var nameParts = (payload.FullName default "") splitBy(" ") --- { FirstName : nameParts[0] default "", LastName : if (sizeOf(nameParts) > 1) nameParts[1] else "Default", Email : payload.EmailId, ContactId : payload.IdentificationNumber, Department : payload.RoleType, MobilePhone : payload.Phone } ]]>
+</ee:set-payload>
+</ee:message>
+</ee:transform>
+<logger level="INFO" doc:name="Logger" doc:id="204b26da-d7ad-402b-876e-351d8415cc97" message=""Sending User to Salesforce: #[payload]""/>
+<!-- 	<salesforce:create doc:name="Create" doc:id="816983a9-1142-40d2-a781-bc6bab8aa9e0" config-ref="Salesforce_Config" type="User__c"/>  -->
+<until-successful maxRetries="5" doc:name="Until Successful" doc:id="219c0791-900b-4431-8de5-ae3bf00ce5ac">
+<http:request method="POST" doc:name="Request" doc:id="d757062d-e0cd-4da0-be0e-238bd2eea09c" url="http://localhost:8082/api/salesforce/sf/user">
+<http:headers>
+<![CDATA[ #[output application/java --- { "Accept" : "application/json", "Content-Type" : "application/json" }] ]]>
+</http:headers>
+</http:request>
+</until-successful>
+<logger level="INFO" doc:name="Logger" doc:id="74ec1479-68c8-49b8-9a76-aadc69fdd05a" message="user synced succesfully"/>
+<set-variable value="#[vars.originalRecord.IdentificationNumber]" doc:name="Set Variable" doc:id="d9d8e737-dcfc-485e-9540-ace85dcc6a19" variableName="personID"/>
+<ee:transform doc:name="Transform Message" doc:id="ed0120cc-510c-48d6-a42b-0e984f5d1bcb">
+<ee:message>
+<ee:set-payload>
+<![CDATA[ %dw 2.0 output application/json --- { IdentificationNumber: vars.originalRecord.IdentificationNumber, Flag: "moved", ModifiedDate: now() as String {format: "yyyy-MM-dd'T'HH:mm:ss"} } ]]>
+</ee:set-payload>
+</ee:message>
+</ee:transform>
+<http:request method="PATCH" doc:name="Request" doc:id="875bdf5c-8137-4baf-94e0-b0087ddcb1ae" config-ref="HTTP_Request_configurationDatabase" url="#['http://localhost:8081/api/db/persons/' ++ vars.personID]">
+<http:query-params>
+<![CDATA[ #[output application/java --- { "Content-Type" : "application/json" }] ]]>
+</http:query-params>
+</http:request>
+<!-- 	<db:update doc:name="Update" doc:id="9008cdea-60ad-4221-b05b-aa37eb30bf38" config-ref="Database_Config">
+              <db:sql><![CDATA[ UPDATE persons
+SET Flag = 'moved',
+    ModifiedDate = CURRENT_TIMESTAMP
+WHERE IdentificationNumber = :id
+                
+              ]]></db:sql>
+              <db:input-parameters><![CDATA[
+                #[{ id: vars.originalRecord.IdentificationNumber }]
+              ]]></db:input-parameters>
+            </db:update>   -->
+<logger level="INFO" doc:name="Logger" doc:id="94c03981-d8e5-4e05-bacd-5a0eea9ad949" message="Flag got updated to 'moved' for User"/>
+</flow>
+<flow name="implementFlow2" doc:id="72ebba9e-f87a-40dd-9f40-c339e97652c5">
+<vm:listener queueName="seller" doc:name="Listener" doc:id="2ded168e-d19b-4bd0-9f61-afa1b43d528d" config-ref="VM_Config"/>
+<set-variable value="#[payload]" doc:name="Set Variable" doc:id="7b4b127d-1553-484c-8b51-981a53470ca5" variableName="originalRecord"/>
+<ee:transform doc:name="Transform Message" doc:id="88679c18-8f5b-472f-a1e5-73f0bed97bb2">
+<ee:message>
+<ee:set-payload>
+<![CDATA[ %dw 2.0 output application/json var from = payload.StartDate default "1970-01-01" var to = payload.EndDate default "1970-01-01" --- { Name : payload.FullName default "Unknown", SellerType : payload.RoleType default "Independent", ActiveFromDate : (from as Date {format:"yyyy-MM-dd"}) as String {format:"MM/dd/yyyy"}, ActiveToDate : (to as Date {format:"yyyy-MM-dd"}) as String {format:"MM/dd/yyyy"} } ]]>
+</ee:set-payload>
+</ee:message>
+</ee:transform>
+<logger level="INFO" doc:name="Logger" doc:id="63994a5f-a100-4723-a56d-e95c6d43fd22" message=""Sending SELLER to Salesforce: #[payload]""/>
+<!-- 	<salesforce:create doc:name="Create" doc:id="576042d1-f3ef-4862-8784-a048b122ba52" config-ref="Salesforce_Config" type="Seller__c"/>  -->
+<until-successful maxRetries="5" doc:name="Until Successful" doc:id="3090e842-974d-4a74-a3a3-13035ed1fcbc">
+<http:request method="POST" doc:name="Request" doc:id="262024dd-a052-417c-996a-8d87f4902d66" url="http://localhost:8082/api/salesforce/sf/seller">
+<http:headers>
+<![CDATA[ #[output application/java --- { "Accept" : "application/json", "Content-Type" : "application/json" }] ]]>
+</http:headers>
+</http:request>
+</until-successful>
+<logger level="INFO" doc:name="Logger" doc:id="9abe8503-f90b-4a3a-9e25-8c6a4128404e" message="seller synced succesfully"/>
+<set-variable value="#[vars.originalRecord.IdentificationNumber]" doc:name="Set Variable" doc:id="e3e2ca8f-1f3e-4b99-83d4-15fbd25ecb7a" variableName="personID"/>
+<ee:transform doc:name="Transform Message" doc:id="855fa5bc-5cc9-449f-b766-49dea435ed12">
+<ee:message>
+<ee:set-payload>
+<![CDATA[ %dw 2.0 output application/json --- { IdentificationNumber: vars.originalRecord.IdentificationNumber, Flag: "moved", ModifiedDate: now() as String {format: "yyyy-MM-dd'T'HH:mm:ss"} } ]]>
+</ee:set-payload>
+</ee:message>
+</ee:transform>
+<http:request method="PATCH" doc:name="Request" doc:id="13e01150-50a9-4f21-ab45-7b60299c2d76" config-ref="HTTP_Request_configurationDatabase" url="#['http://localhost:8081/api/db/persons/' ++ vars.personID]">
+<http:headers>
+<![CDATA[ #[output application/java --- { "Content-Type" : "application/json" }] ]]>
+</http:headers>
+</http:request>
+<!-- 		<db:update doc:name="Update" doc:id="6b2c77d8-8745-4093-8a01-ec87f5346442" config-ref="Database_Config">
+              <db:sql><![CDATA[ UPDATE persons
+SET Flag = 'moved',
+    ModifiedDate = CURRENT_TIMESTAMP
+WHERE IdentificationNumber = :id
+                
+              ]]></db:sql>
+              <db:input-parameters><![CDATA[#[{ id: vars.originalRecord.IdentificationNumber }]]]></db:input-parameters>
+            </db:update>  -->
+<logger level="INFO" doc:name="Logger" doc:id="f915a988-6204-4b4b-ab04-7df3c5521c27" message="Flag got updated to 'moved' for Seller"/>
+</flow>
+<flow name="BatchCompletionFlow" doc:id="42414fb1-5d45-4566-aaa4-9c59bf0991fd">
+<choice doc:name="Any Failures?">
+<when expression="#[sizeOf(payload) > 0]">
+<logger level="ERROR" message="Failed records found: #[sizeOf(payload)]"/>
+<logger level="ERROR" message="Failures detail: #[write(payload.failures default[], 'application/json')]"/>
+</when>
+<otherwise>
+<!--  on full success, optionally notify source system or log  -->
+<logger level="INFO" message="All records processed successfully." doc:name="Log Success"/>
+</otherwise>
+</choice>
+</flow>
+</mule>
+
+
+#NOTE: This is process code where it handles logic(in personprocess)
