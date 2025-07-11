@@ -1,0 +1,107 @@
+#%RAML 1.0
+title: personProcess
+version: v1
+baseUri: /api
+mediaType: application/json
+securitySchemes:
+   securityScheme: !include /Security Schema/securityScheme.raml
+
+uses:
+securedBy: securityScheme
+traits:
+     
+     CommonResponses:  !include /Traits/commonResponses.raml
+
+types:
+  PersonRequest:
+    type: object
+    properties:
+      FullName: string
+      Gender: string
+      Address: string
+      Phone: string
+      EmailId: string
+      DateOfBirth: date-only
+      Role: string
+      RoleType: string
+      StartDate: date-only
+      EndDate: date-only
+      Description: string
+      IdentificationNumber: string
+    example: 
+      FullName: "Manish Desai"
+      Gender: "Male"
+      Address: "110 FC Road, Pune"
+      Phone: "9876543210"
+      EmailId: "manish@example.com"
+      DateOfBirth: "1990-01-15"
+      Role: "Employee"
+      RoleType: "Full-Time"
+      StartDate: "2023-01-01"
+      EndDate: "2025-12-31"
+      Description: "Software Engineer"
+      IdentificationNumber: "EMP1234"
+
+  SyncResponse:
+    type: object
+    properties:
+      message: string
+      totalRecords: number
+      successCount: number
+      failureCount: number
+    example: 
+      message: "Processing complete"
+      totalRecords: 1
+      successCount: 1
+      failureCount: 0
+
+/syncPerson:
+  post:
+    description: Process and sync person records from DB to Salesforce
+    is: [CommonResponses ]
+    body:
+      application/json:
+        type: PersonRequest[]
+        example: |
+          [
+            {
+              "FullName": "Manish Desai",
+              "Gender": "Male",
+              "Address": "110 FC Road, Pune",
+              "Phone": "9876543210",
+              "EmailId": "manish@example.com",
+              "DateOfBirth": "1990-01-15",
+              "Role": "Employee",
+              "RoleType": "Full-Time",
+              "StartDate": "2023-01-01",
+              "EndDate": "2025-12-31",
+              "Description": "Software Engineer",
+              "IdentificationNumber": "EMP1234"
+            },
+            {
+              "FullName": "Anu Kumar",
+              "Gender": "Female",
+              "Address": "Chennai",
+              "Phone": "9876543210",
+              "EmailId": "anu@example.com",
+              "DateOfBirth": "1995-07-15",
+              "Role": "User",
+              "RoleType": "Part-Time",
+              "StartDate": "2022-05-01",
+              "EndDate": "2024-11-30",
+              "Description": "Marketing",
+              "IdentificationNumber": "USR1002"
+            }
+          ]
+    responses:
+      200:
+        body:
+          application/json:
+            type: SyncResponse
+            example: 
+              {
+                "message": "All records synced successfully",
+                "totalRecords": 2,
+                "successCount": 2,
+                "failureCount": 0
+              }
