@@ -1,0 +1,4 @@
+->Give port no as 8081,8082,8084 (avoid repetations).
+->arrange folders in order first call database system ,salesforce system and process so that app starts and run  accordingdly as arranged.
+->test in postman once after creating raml codes(so can detect if any error raises in raml).
+->can give postman url for respective api in http request to call that particular api.
