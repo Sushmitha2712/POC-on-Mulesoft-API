@@ -1,0 +1,55 @@
+#%RAML 1.0
+title: personSystem
+version: v1
+baseUri: /api/db
+protocols:
+   - HTTP
+securitySchemes:
+   securityScheme: !include /SecurityScheme/securityScheme.raml
+
+uses:
+securedBy: securityScheme
+traits:
+     
+     commonRespones: !include /Traits/CommonResponses.raml 
+
+      
+       
+
+/db/persons:
+  
+  get:
+    is: [commonRespones]
+    description: Fetch all Person records with Flag = 'new'
+    
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              [
+                {
+                  "FullName": "Manish Desai",
+                  "Phone": "9876543210",
+                  "Flag": "new"
+                }
+              ]
+/db/persons/{id}:
+  uriParameters:
+    id:
+      type: string
+      required: true
+  patch:
+    description: Update Flag and ModifiedDate of a person record
+    body:
+      application/json:
+        example: |
+          {
+            "Flag": "moved",
+            "ModifiedDate": "2025-06-20T10:20:00Z"
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            example: {"message": "Updated successfully"}
